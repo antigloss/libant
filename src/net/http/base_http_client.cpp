@@ -23,9 +23,9 @@ BaseHttpClient::BaseHttpClient(boost::asio::io_context& ioCtx, const std::string
 {
     vector<string> hostPort;
     boost::split(hostPort, svrAddr, boost::is_any_of(":"));
-    host_ = move(hostPort[0]);
+    host_ = std::move(hostPort[0]);
     if (hostPort.size() >= 2) {
-        port_ = move(hostPort[1]);
+        port_ = std::move(hostPort[1]);
     } else {
         port_ = defPort;
     }
@@ -195,7 +195,7 @@ void BaseHttpClient::init_request(const request_params* req_params)
 
     // 这个必须放在最后
     if (req_params->body) {
-        request_.body() = move(*req_params->body);
+        request_.body() = std::move(*req_params->body);
     } else {
         request_.body().clear();
     }
@@ -209,7 +209,7 @@ void BaseHttpClient::on_resolve(const boost::beast::error_code& ec, boost::asio:
     }
 
     if (!ec) {
-        resolvedResults_ = move(results);
+        resolvedResults_ = std::move(results);
         return connect();
     }
 
