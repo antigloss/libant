@@ -34,7 +34,9 @@ class KafkaConsumer {
 public:
     ~KafkaConsumer()
     {
-        consumer_->close();
+        if (consumer_) {
+            consumer_->close();
+        }
     }
 
     /**

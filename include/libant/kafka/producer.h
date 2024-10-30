@@ -67,9 +67,9 @@ public:
      *  So don't retry immediately after Produce() tells us that the queue is full.
      *  Retry periodically after Poll().
 	 */
-    KafkaErrCode Produce(const std::string& topic, const std::string& payload, void* msgOpaque = nullptr)
+    KafkaErrCode Produce(const std::string& topic, const std::string& payload, void* msgOpaque = nullptr, int32_t partition = RdKafka::Topic::PARTITION_UA)
     {
-        auto r = producer_->produce(topic, RdKafka::Topic::PARTITION_UA, RdKafka::Producer::RK_MSG_COPY, const_cast<char*>(payload.data()), payload.size(),
+        auto r = producer_->produce(topic, partition, RdKafka::Producer::RK_MSG_COPY, const_cast<char*>(payload.data()), payload.size(),
                                     nullptr, 0, 0, msgOpaque);
         if (r == RdKafka::ERR_NO_ERROR) {
             return RdKafka::ERR_NO_ERROR;
