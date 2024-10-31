@@ -37,6 +37,7 @@ public:
         if (consumer_) {
             consumer_->close();
         }
+        RdKafka::TopicPartition::destroy(partitions_);
     }
 
     /**
@@ -101,6 +102,45 @@ public:
     }
 
     /**
+     *  @brief Update the assignment set to \p partitions.
+     *
+     * The assignment set is the set of partitions actually being consumed
+     * by the KafkaConsumer.
+     */
+    KafkaErrCode Assign(const std::vector<KafkaTopicPartition>& parts)
+    {
+        std::vector<RdKafka::TopicPartition*> partitions;
+        for (const auto& p : parts) {
+            partitions.emplace_back(RdKafka::TopicPartition::create(p.Topic(), p.Partition()));
+        }
+
+        auto r = consumer_->assign(partitions);
+        if (r == RdKafka::ERR_NO_ERROR) {
+            RdKafka::TopicPartition::destroy(partitions_);
+            partitions_ = std::move(partitions);
+            return RdKafka::ERR_NO_ERROR;
+        }
+
+        RdKafka::TopicPartition::destroy(partitions);
+        errMsg_ = RdKafka::err2str(r);
+        return r;
+    }
+
+    /**
+     * @brief Stop consumption and remove the current assignment.
+     */
+    KafkaErrCode Unassign()
+    {
+        auto r = consumer_->unassign();
+        if (r == RdKafka::ERR_NO_ERROR) {
+            RdKafka::TopicPartition::destroy(partitions_);
+            return RdKafka::ERR_NO_ERROR;
+        }
+        errMsg_ = RdKafka::err2str(r);
+        return r;
+    }
+
+    /**
 	 * @brief Consume a message or error event. A corresponding callback will be triggered
      * @param timeoutMS: 0 for non-blocking, -1 for block as long as it takes to get a Message
 	 * @returns One of:
@@ -133,6 +173,7 @@ public:
 
 private:
     std::string errMsg_;
+    std::vector<RdKafka::TopicPartition*> partitions_;
     std::unique_ptr<RdKafka::KafkaConsumer> consumer_;
 };
 

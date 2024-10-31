@@ -25,6 +25,7 @@
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
+#include <utility>
 
 #include <librdkafka/rdkafkacpp.h>
 
@@ -916,6 +917,32 @@ public:
 
 private:
     std::unique_ptr<RdKafka::Headers> headers_{RdKafka::Headers::create()};
+};
+
+/**
+ * KafkaTopicPartition
+ */
+class KafkaTopicPartition {
+public:
+    KafkaTopicPartition(std::string topic, int partition)
+        : topic_(std::move(topic))
+        , partition_(partition)
+    {
+    }
+
+    const std::string& Topic() const
+    {
+        return topic_;
+    }
+
+    int Partition() const
+    {
+        return partition_;
+    }
+
+private:
+    const std::string topic_;
+    const int partition_;
 };
 
 } // namespace ant
